@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>計数値の統計変動とガウス分布 解析ガイド</title>
+    <title>計数値の統計変動とガウス分布 解析ガイド (任意データ数対応版)</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -230,7 +230,7 @@
 
         .paste-textarea {
             width: 100%;
-            height: 70px;
+            height: 85px;
             padding: 8px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -425,6 +425,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .chart-title {
@@ -775,28 +777,31 @@
 
             <!-- Paste Box -->
             <div class="paste-box-container">
-                <div class="chart-title" style="font-size: 1.0rem; margin-bottom: 8px;">測定値データの一括入力</div>
+                <div class="chart-title" style="font-size: 1.0rem; margin-bottom: 8px;">測定値データの一括入力（任意データ数対応）</div>
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
-                    コピーした100個の測定データ（改行・タブ・スペース・カンマ区切り）を下の枠に貼り付けて「一括反映」をクリックしてください。
+                    Excelやテキスト等からコピーした測定データ（改行・タブ・スペース・カンマ区切り、<b>件数制限なし</b>）を貼り付けて「一括反映」をクリックしてください。データ数に合わせて自動拡張されます。
                 </p>
-                <textarea id="paste-input-area" class="paste-textarea" placeholder="ここに100個のデータを貼り付け..."></textarea>
-                <div style="margin-top: 8px; display: flex; gap: 10px;">
-                    <button class="btn-action btn-primary" onclick="parsePastedData()">📥 貼り付けデータをグリッドに反映</button>
+                <textarea id="paste-input-area" class="paste-textarea" placeholder="ここに測定データを貼り付け（例: 50個、100個、200個、500個など任意データ数対応）..."></textarea>
+                <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-action btn-primary" onclick="parsePastedData()">📥 貼り付けデータをグリッドに一括反映</button>
                     <button class="btn-action btn-secondary" onclick="document.getElementById('paste-input-area').value=''">テキスト消去</button>
                 </div>
             </div>
 
-            <!-- Data Table Input (10x10) -->
+            <!-- Data Table Input (Dynamic Rows x 5 Cols) -->
             <div class="input-grid-container">
                 <div class="chart-header">
-                    <div class="chart-title">■ 10秒間計数値データ (100回分)</div>
-                    <div>
-                        <button class="btn-action btn-secondary" onclick="resetSampleData()">🔄 サンプルデータに戻す</button>
+                    <div class="chart-title">■ 10秒間計数値データ (<span id="grid-data-count">100</span>回分 有効)</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn-action btn-secondary" onclick="addRow(5)">➕ 5行追加 (+25回分)</button>
+                        <button class="btn-action btn-secondary" onclick="addRow(1)">➕ 1行追加 (+5回分)</button>
+                        <button class="btn-action btn-secondary" onclick="removeRow()">➖ 末尾行を削除</button>
+                        <button class="btn-action btn-secondary" onclick="resetSampleData()">🔄 サンプルデータ(100回)に戻す</button>
                         <button class="btn-action btn-secondary" onclick="clearData()">🗑️ クリア</button>
                     </div>
                 </div>
 
-                <div class="table-responsive" style="max-height: 340px; overflow-y: auto;">
+                <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
                     <table class="data-table-input" id="grid-input-table">
                         <!-- Populated by JS -->
                     </table>
@@ -876,9 +881,9 @@
                 <!-- Step 1 -->
                 <div class="step-card">
                     <div class="step-number">1</div>
-                    <div class="step-title">手順 1: 100回の測定データの整理</div>
+                    <div class="step-title">手順 1: 測定データの整理</div>
                     <div class="step-desc">
-                        GMサーベイメータで10秒間測定した100個の計数値データを一覧として整理・出力します。
+                        GMサーベイメータで10秒間測定した計数値データを一覧として整理・出力します。
                     </div>
                     <div class="formula-box">
                         実測データの例: 1634, 1731, 1600, 1614, 1598, ...
@@ -890,7 +895,7 @@
                     <div class="step-number">2</div>
                     <div class="step-title">手順 2: データ全体の最大値と最小値の探索</div>
                     <div class="step-desc">
-                        100個のデータの中から最も大きい値（最大値）と最も小さい値（最小値）を見つけ出し、データ全体のばらつきの範囲を把握します。
+                        測定データの中から最も大きい値（最大値）と最も小さい値（最小値）を見つけ出し、データ全体のばらつきの範囲を把握します。
                     </div>
                     <div class="formula-box">
                         実測データ例: 最小値 = 1550, 最大値 = 1731
@@ -926,7 +931,7 @@
                     <div class="step-number">5</div>
                     <div class="step-title">手順 5: 各区間に含まれるデータの個数（度数）をカウント</div>
                     <div class="step-desc">
-                        100回の測定データがどの区間に何回入ったか（出現回数）を集計します。（合計は100回）
+                        測定データがどの区間に何回入ったか（出現回数）を集計します。（合計は総測定回数 M 回）
                     </div>
                     <div class="formula-box">
                         例: 1550〜1559 の区間 ➔ 出現回数 4 回
@@ -938,7 +943,7 @@
                     <div class="step-number">6</div>
                     <div class="step-title">手順 6: 全測定データの平均値を算出</div>
                     <div class="step-desc">
-                        100回の測定データすべての平均値を計算し、分布の中心位置（山の一番高い位置）を確認します。
+                        測定データすべての平均値を計算し、分布の中心位置（山の一番高い位置）を確認します。
                     </div>
                     <div class="formula-box">
                         計算結果例: 平均値 = 1624.75
@@ -993,7 +998,7 @@
                 <!-- Chart Area -->
                 <div class="card">
                     <div class="chart-header">
-                        <div class="chart-title"> 実測値度数ヒストグラム vs ガウス分布理論曲線</div>
+                        <div class="chart-title">📊 実測値度数ヒストグラム vs ガウス分布理論曲線</div>
                         <div class="chart-controls">
                             <button class="btn-sm active" id="btn-percent" onclick="updateChartMode('percent')">割合 (%) 表示</button>
                             <button class="btn-sm" id="btn-count" onclick="updateChartMode('count')">回数 (回) 表示</button>
@@ -1145,7 +1150,7 @@
                 <div class="step-card" style="border-top: 5px solid var(--accent);">
                     <div class="step-title" style="color: var(--accent);">📌 測定回数 M の影響（大数の法則）</div>
                     <div class="step-desc">
-                        測定回数 $M=100$ 回のようにデータ数が十分に多いと、実測のヒストグラムはきれいな左右対称のガウス分布（ベル型曲線）に近づきます。
+                        測定回数 $M$ のデータ数が十分に多いと、実測のヒストグラムはきれいな左右対称のガウス分布（ベル型曲線）に近づきます。本ツールでは100回に限らず、50回や200回、500回などの任意のデータ数でも解析が可能です。
                     </div>
                 </div>
 
@@ -1291,20 +1296,33 @@
             return Math.round(dof * Math.pow(1 - 2 / (9 * dof) + z * Math.sqrt(2 / (9 * dof)), 3) * 100) / 100;
         }
 
-        // Render 10x10 Input Table Grid
+        // Render Dynamic Input Table Grid (5 columns, variable rows)
+        const COLS = 5;
         function renderInputGrid() {
             const table = document.getElementById('grid-input-table');
+            if(!table) return;
+
+            // 有効データ数
+            const validDataCount = currentRawData.filter(v => typeof v === 'number' && !isNaN(v) && v !== null).length;
+            const countEl = document.getElementById('grid-data-count');
+            if (countEl) countEl.innerText = validDataCount;
+
+            // 行数を算出（最低1行 = 5セル）
+            const totalCells = Math.max(COLS, Math.ceil(currentRawData.length / COLS) * COLS);
+            const totalRows = totalCells / COLS;
+
             let html = '<thead><tr>';
-            for(let c=0; c<5; c++) {
+            for(let c=0; c<COLS; c++) {
                 html += '<th>回数</th><th>計数値</th>';
             }
             html += '</tr></thead><tbody>';
 
-            for(let r=0; r<20; r++) {
+            for(let r=0; r<totalRows; r++) {
                 html += '<tr>';
-                for(let c=0; c<5; c++) {
-                    const idx = r + c * 20;
-                    const val = currentRawData[idx] !== undefined ? currentRawData[idx] : '';
+                for(let c=0; c<COLS; c++) {
+                    const idx = r + c * totalRows;
+                    const val = (idx < currentRawData.length && currentRawData[idx] !== null && currentRawData[idx] !== undefined)
+                        ? currentRawData[idx] : '';
                     html += `<td class="cell-no">${idx + 1}</td>`;
                     html += `<td><input type="number" class="input-cell" data-idx="${idx}" value="${val}" onchange="onCellInputChange(this)"></td>`;
                 }
@@ -1314,7 +1332,7 @@
             table.innerHTML = html;
         }
 
-        // Parse Text Copied Values
+        // Parse Text Copied Values (任意データ数対応)
         function parsePastedData() {
             const rawText = document.getElementById('paste-input-area').value;
             if(!rawText.trim()) return;
@@ -1327,13 +1345,16 @@
                 return;
             }
 
-            for(let i=0; i<Math.min(100, nums.length); i++) {
-                currentRawData[i] = nums[i];
-            }
+            // データ数制限を解除して全件を取り込む
+            currentRawData = [...nums];
 
             if(nums.length >= 2) {
-                const minVal = Math.min(...nums);
-                const maxVal = Math.max(...nums);
+                let minVal = nums[0];
+                let maxVal = nums[0];
+                for(let i=1; i<nums.length; i++) {
+                    if(nums[i] < minVal) minVal = nums[i];
+                    if(nums[i] > maxVal) maxVal = nums[i];
+                }
                 document.getElementById('input-min').value = minVal;
                 document.getElementById('input-max').value = maxVal;
                 document.getElementById('input-start-min').value = Math.floor(minVal / 10) * 10;
@@ -1347,11 +1368,58 @@
         function onCellInputChange(inputEl) {
             const idx = parseInt(inputEl.getAttribute('data-idx'));
             const val = parseFloat(inputEl.value);
+            
+            // 配列の長さをインデックスに合わせて拡張
+            while(currentRawData.length <= idx) {
+                currentRawData.push(null);
+            }
+
             if(!isNaN(val)) {
                 currentRawData[idx] = val;
             } else {
-                currentRawData[idx] = 0;
+                currentRawData[idx] = null;
             }
+
+            // 有効件数表示を更新
+            const validDataCount = currentRawData.filter(v => typeof v === 'number' && !isNaN(v) && v !== null).length;
+            const countEl = document.getElementById('grid-data-count');
+            if (countEl) countEl.innerText = validDataCount;
+
+            recalculateAll();
+        }
+
+        // 行の追加 (+count 行 = +count*5 セル)
+        function addRow(count = 1) {
+            const totalCells = Math.max(COLS, Math.ceil(currentRawData.length / COLS) * COLS);
+            const newTotal = totalCells + count * COLS;
+            while(currentRawData.length < newTotal) {
+                currentRawData.push(null);
+            }
+            renderInputGrid();
+        }
+
+        // 末尾行の削除 (-1行 = -5セル)
+        function removeRow() {
+            const totalCells = Math.max(COLS, Math.ceil(currentRawData.length / COLS) * COLS);
+            if (totalCells <= COLS) {
+                alert("これ以上行を削除できません（最低1行必要です）。");
+                return;
+            }
+            // 縦並び構造に対応するため、各列の末尾行に相当するインデックスを削除
+            const totalRows = totalCells / COLS;
+            const targetRow = totalRows - 1;
+            // 大きいインデックスから順に削除
+            const removeIndices = [];
+            for(let c=0; c<COLS; c++) {
+                removeIndices.push(targetRow + c * totalRows);
+            }
+            removeIndices.sort((a,b) => b - a);
+            for(const idx of removeIndices) {
+                if(idx < currentRawData.length) {
+                    currentRawData.splice(idx, 1);
+                }
+            }
+            renderInputGrid();
             recalculateAll();
         }
 
@@ -1367,7 +1435,9 @@
         }
 
         function clearData() {
-            currentRawData = new Array(100).fill(0);
+            // 20行×5列（100セル分）の空枠を用意
+            currentRawData = new Array(20 * COLS).fill(null);
+            document.getElementById('paste-input-area').value = '';
             renderInputGrid();
             recalculateAll();
         }
@@ -1385,16 +1455,31 @@
             const rawWidth = (studentMax - studentMin) / 20;
             document.getElementById('calc-width-raw').value = rawWidth.toFixed(2);
 
-            const validData = currentRawData.filter(v => typeof v === 'number' && !isNaN(v));
-            const M = validData.length || 1;
+            // 有効な数値のみを抽出
+            const validData = currentRawData.filter(v => typeof v === 'number' && !isNaN(v) && v !== null);
+            const M = validData.length;
+
+            if (M === 0) {
+                computedMean = 0;
+                computedStdDev = 0;
+                document.getElementById('badge-count').innerText = `測定回数 M = 0 回`;
+                document.getElementById('badge-mean').innerText = `平均計数値 n = -`;
+                document.getElementById('badge-std').innerText = `標準偏差 σ = -`;
+                document.getElementById('stat-M').innerText = `0 回`;
+                return;
+            }
+
             const sum = validData.reduce((acc, v) => acc + v, 0);
             computedMean = sum / M;
 
             const variance = validData.reduce((acc, v) => acc + Math.pow(v - computedMean, 2), 0) / M;
             computedStdDev = Math.sqrt(variance);
 
-            // ★ 階級数の自動算出（データの最大値をカバーするまでの階級数 K を求める）
-            const maxValInData = validData.length > 0 ? Math.max(...validData) : studentMax;
+            // 階級数の自動算出（データの最大値をカバーするまでの階級数 K を求める）
+            let maxValInData = studentMax;
+            for(let i=0; i<validData.length; i++) {
+                if (validData[i] > maxValInData) maxValInData = validData[i];
+            }
             const targetMax = Math.max(studentMax, maxValInData);
             let K = Math.ceil((targetMax - startMin + 1) / binWidth);
             if (K < 1) K = 1;
@@ -1444,7 +1529,7 @@
                 });
             }
 
-            // ★ 自由度 ν = 階級数 K - 1 - 推定パラメータ数 2 (平均・標準偏差)
+            // 自由度 ν = 階級数 K - 1 - 推定パラメータ数 2 (平均・標準偏差)
             const dof = Math.max(1, K - 3);
             const critical = getChi2Critical(dof);
 
@@ -1532,7 +1617,7 @@
             // Update Section Title
             const secTitleEl = document.getElementById('table-section-title');
             if (secTitleEl) {
-                secTitleEl.innerText = `Co-60 度数分布およびガウス分布（正規分布）計算表 (全 ${K} 階級)`;
+                secTitleEl.innerText = `Co-60 度数分布およびガウス分布（正規分布）計算表 (全 ${K} 階級, 測定回数 M = ${M} 回)`;
             }
 
             // Render Preview Table (Tab 0)
@@ -1612,7 +1697,7 @@
 
         function applyStudentSettings() {
             recalculateAll();
-            alert(" 階級分けと集計設定を全体（計算表およびダッシュボードグラフ）に反映しました。");
+            alert("✨ 階級分けと集計設定を全体（計算表およびダッシュボードグラフ）に反映しました。");
         }
 
         function copyReportTableToClipboard() {
@@ -1658,7 +1743,9 @@
 
             const labels = processedRows.map(r => r.mi.toFixed(0));
 
-            const M = currentRawData.length || 100;
+            const validData = currentRawData.filter(v => typeof v === 'number' && !isNaN(v) && v !== null);
+            const M = validData.length || 1;
+
             const actualData = currentMode === 'percent' 
                 ? processedRows.map(r => r.act_pct)
                 : processedRows.map(r => r.freq);
