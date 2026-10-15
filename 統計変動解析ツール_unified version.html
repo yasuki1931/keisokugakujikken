@@ -1,0 +1,2776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RADSTAT SNAP // Unified Radiation Fluctuation Workbench (Gaussian & Poisson)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Pure White Scientific Theme */
+            --bg-canvas: #ffffff;
+            --bg-subtle: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-dark: #cbd5e1;
+            
+            --text-main: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --accent: #2563eb;
+            --success: #15803d;
+            --warning: #b45309;
+            --danger: #b91c1c;
+            
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+            --font-sans: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
+            
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-card: 0 4px 16px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-canvas);
+            color: var(--text-body);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* Top Bar */
+        .top-navbar {
+            min-height: 64px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .nav-left-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Drawer Toggle Button (Tab Icon) */
+        .drawer-toggle-btn {
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            padding: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .drawer-toggle-btn:hover {
+            background-color: var(--bg-subtle);
+            border-color: var(--primary);
+        }
+
+        .drawer-bar {
+            width: 20px;
+            height: 2px;
+            background-color: var(--text-main);
+            border-radius: 1px;
+            transition: all 0.2s;
+        }
+
+        .brand-title-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-tag {
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: var(--bg-subtle);
+            color: var(--primary);
+            border: 1px solid var(--border-color);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .brand-desc {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+        }
+
+        /* Model Switcher Switch */
+        .model-switcher-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg-subtle);
+            border: 1.5px solid var(--border-dark);
+            border-radius: 8px;
+            padding: 3px;
+            gap: 4px;
+        }
+
+        .model-switch-btn {
+            padding: 6px 14px;
+            border: none;
+            background: transparent;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .model-switch-btn:hover {
+            color: var(--text-main);
+        }
+
+        .model-switch-btn.active {
+            background: #ffffff;
+            color: var(--primary-dark);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .top-status-pills {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-pill {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        /* Drawer Overlay */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.4);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Left Drawer Sidebar */
+        .drawer-sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: -320px;
+            width: 300px;
+            background: #ffffff;
+            border-right: 1px solid var(--border-color);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .drawer-sidebar.active {
+            left: 0;
+        }
+
+        .drawer-header {
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+        }
+
+        .drawer-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            line-height: 1;
+        }
+
+        .drawer-close-btn:hover {
+            color: var(--text-main);
+            background-color: var(--bg-subtle);
+        }
+
+        .drawer-nav-list {
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-grow: 1;
+        }
+
+        .drawer-tab-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 14px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.18s;
+            color: var(--text-body);
+        }
+
+        .drawer-tab-item:hover {
+            background-color: var(--bg-subtle);
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .drawer-tab-item.active {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .drawer-tab-code {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            min-width: 26px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .drawer-tab-item.active .drawer-tab-code {
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .drawer-tab-text-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer-tab-label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .drawer-tab-sub {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .drawer-inspector {
+            padding: 16px;
+            margin: 12px;
+            background-color: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+        }
+
+        .drawer-inspector-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            margin-bottom: 10px;
+        }
+
+        .drawer-inspector-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .drawer-inspector-cell {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            border-radius: var(--radius-sm);
+        }
+
+        .drawer-inspector-lbl {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .drawer-inspector-val {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .drawer-inspector-badge {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 6px;
+            text-align: center;
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+        }
+
+        /* Main Workspace Container */
+        .main-workspace {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 32px 24px 60px 24px;
+        }
+
+        .section-header-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .header-nav-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header-title-text {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+
+        .mod-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #ffffff;
+            border: 1.5px solid var(--border-dark);
+            border-radius: 6px;
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            white-space: nowrap;
+        }
+
+        .mod-nav-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary-dark);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .mod-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            background: var(--bg-subtle);
+            border-color: var(--border-color);
+            color: var(--text-muted);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .header-step-indicator {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .module-bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            margin-top: 32px;
+            border-top: 1px dashed var(--border-dark);
+        }
+
+        .bottom-step-indicator {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .tab-content-pane {
+            display: none;
+        }
+
+        .tab-content-pane.active {
+            display: block;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Clean White Cards */
+        .white-card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .white-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .card-title-text {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+
+        /* Flat Buttons */
+        .flat-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+            font-family: var(--font-sans);
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary-dark);
+        }
+
+        .btn-main:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-ghost {
+            background: #ffffff;
+            color: var(--text-body);
+            border-color: var(--border-dark);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-subtle);
+            color: var(--text-main);
+        }
+
+        .btn-accent {
+            background: var(--success);
+            color: #ffffff;
+        }
+
+        .btn-accent:hover {
+            background: #166534;
+        }
+
+        .btn-small {
+            padding: 5px 12px;
+            font-size: 0.78rem;
+        }
+
+        .btn-small.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary-dark);
+        }
+
+        /* Ingestion Textarea */
+        .ingest-box {
+            background-color: var(--bg-subtle);
+            border: 1px dashed var(--border-dark);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        .ingest-textarea {
+            width: 100%;
+            height: 90px;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            color: var(--text-main);
+            resize: vertical;
+        }
+
+        .ingest-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+        }
+
+        /* Data Input Matrix Table */
+        .table-scroll-container {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+        }
+
+        .input-matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .input-matrix-table th {
+            background-color: var(--bg-subtle);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 8px 6px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            letter-spacing: 0.05em;
+        }
+
+        .input-matrix-table td {
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .matrix-cell-badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            font-weight: 700;
+            width: 44px;
+        }
+
+        .matrix-input-cell {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.92rem;
+            font-weight: 700;
+            padding: 6px 8px;
+            border-radius: 4px;
+            text-align: right;
+            transition: all 0.15s;
+        }
+
+        .matrix-input-cell:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #f0f9ff;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+        }
+
+        /* Configuration Grid */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 20px;
+            margin-top: 14px;
+        }
+
+        .config-unit {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .config-unit label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .config-unit input {
+            background-color: #ffffff;
+            border: 1px solid var(--border-dark);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .config-unit input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+        }
+
+        .field-subtext {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Standard Data Tables */
+        table.white-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: right;
+        }
+
+        table.white-table th {
+            background-color: var(--bg-subtle);
+            color: var(--text-main);
+            font-weight: 700;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            padding: 12px 10px;
+            border-bottom: 2px solid var(--border-color);
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        table.white-table td {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-body);
+        }
+
+        table.white-table tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        table.white-table tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        table.white-table tr.total-row {
+            background-color: var(--bg-subtle);
+            font-weight: 800;
+            border-top: 2px solid var(--border-dark);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+        }
+
+        table.white-table th:nth-child(1), table.white-table th:nth-child(2), table.white-table th:nth-child(3), table.white-table th:nth-child(4) {
+            text-align: center;
+        }
+        table.white-table td:nth-child(1), table.white-table td:nth-child(2), table.white-table td:nth-child(3), table.white-table td:nth-child(4) {
+            text-align: center;
+        }
+
+        .highlight-col {
+            background-color: #fefce8;
+            color: #92400e !important;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        /* Dashboard & Charts */
+        .dashboard-split-layout {
+            display: grid;
+            grid-template-columns: 2.1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-split-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-container-box {
+            position: relative;
+            width: 100%;
+            height: 380px;
+        }
+
+        .stat-metrics-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-line-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background-color: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+
+        .stat-line-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .stat-line-value {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Chi-Square Dashboard Box */
+        .chi-eval-panel {
+            background: #ffffff;
+            border: 1.5px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .chi-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .chi-title-label {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+        }
+
+        .chi-badge-pill {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .chi-pass {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+
+        .chi-allow {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #7dd3fc;
+        }
+
+        .chi-warn {
+            background-color: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde047;
+        }
+
+        .chi-alert {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+
+        .chi-grid-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .chi-stat-card {
+            background-color: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+
+        .chi-stat-tag {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        .chi-stat-number {
+            font-family: var(--font-mono);
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .chi-progress-track {
+            height: 10px;
+            background-color: #f1f5f9;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .chi-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #0284c7 65%, #f59e0b 90%, #ef4444 100%);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chi-progress-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #b91c1c;
+            left: 77%;
+        }
+
+        .chi-detail-text {
+            font-size: 0.88rem;
+            color: var(--text-body);
+            line-height: 1.6;
+            background: var(--bg-subtle);
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--primary);
+        }
+
+        /* Step Cards Grid (All Japanese in Content) */
+        .protocol-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .protocol-step-box {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.2s;
+        }
+
+        .protocol-step-box:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .step-header-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .step-num-pill {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background-color: var(--bg-subtle);
+            color: var(--primary-dark);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .step-headline {
+            font-size: 1.0rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .step-paragraph {
+            font-size: 0.9rem;
+            color: var(--text-body);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .step-formula-box {
+            background-color: var(--bg-subtle);
+            border-left: 3px solid var(--primary);
+            padding: 8px 12px;
+            border-radius: 0 4px 4px 0;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        /* Report Math Presentation */
+        .report-math-presentation {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .report-math-caption {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        .math-eq-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .math-eq-card {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.25rem;
+            color: var(--text-main);
+            background: #ffffff;
+            padding: 12px 28px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .math-variable {
+            font-style: italic;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         DRAWER OVERLAY & LEFT TAB DRAWER
+         ============================================================ -->
+    <div class="drawer-overlay" id="drawer-overlay" onclick="closeSidebar()"></div>
+
+    <aside class="drawer-sidebar" id="drawer-sidebar">
+        <div class="drawer-header">
+            <span class="drawer-title">WORKSPACE MODULES</span>
+            <button class="drawer-close-btn" onclick="closeSidebar()">×</button>
+        </div>
+
+        <nav class="drawer-nav-list">
+            <button class="drawer-tab-item active" onclick="switchTab(this, 'input')" data-tab="input">
+                <span class="drawer-tab-code">01</span>
+                <div class="drawer-tab-text-box">
+                    <span class="drawer-tab-label">DATA ACQUISITION</span>
+                    <span class="drawer-tab-sub">Input & Binning Setup</span>
+                </div>
+            </button>
+
+            <button class="drawer-tab-item" onclick="switchTab(this, 'dashboard')" data-tab="dashboard">
+                <span class="drawer-tab-code">02</span>
+                <div class="drawer-tab-text-box">
+                    <span class="drawer-tab-label">ANALYTICS & FIT</span>
+                    <span class="drawer-tab-sub">Histogram & Chi-Square</span>
+                </div>
+            </button>
+
+            <button class="drawer-tab-item" onclick="switchTab(this, 'table')" data-tab="table">
+                <span class="drawer-tab-code">03</span>
+                <div class="drawer-tab-text-box">
+                    <span class="drawer-tab-label">FREQUENCY MATRIX</span>
+                    <span class="drawer-tab-sub">Distribution Table</span>
+                </div>
+            </button>
+
+            <button class="drawer-tab-item" onclick="switchTab(this, 'report')" data-tab="report">
+                <span class="drawer-tab-code">04</span>
+                <div class="drawer-tab-text-box">
+                    <span class="drawer-tab-label">REPORT EXPORT</span>
+                    <span class="drawer-tab-sub">Summary Data Copy</span>
+                </div>
+            </button>
+
+            <button class="drawer-tab-item" onclick="switchTab(this, 'workflow')" data-tab="workflow">
+                <span class="drawer-tab-code">05</span>
+                <div class="drawer-tab-text-box">
+                    <span class="drawer-tab-label">PROTOCOL GUIDE</span>
+                    <span class="drawer-tab-sub" id="nav-sub-protocol">Standard Procedure</span>
+                </div>
+            </button>
+
+            <button class="drawer-tab-item" onclick="switchTab(this, 'trouble')" data-tab="trouble">
+                <span class="drawer-tab-code">06</span>
+                <div class="drawer-tab-text-box">
+                    <span class="drawer-tab-label">TECHNICAL NOTES</span>
+                    <span class="drawer-tab-sub">QA & Error Control</span>
+                </div>
+            </button>
+        </nav>
+
+        <div class="drawer-inspector">
+            <div class="drawer-inspector-title">STATUS INSPECTOR (<span id="sb-model-lbl">GAUSSIAN</span>)</div>
+            <div class="drawer-inspector-grid">
+                <div class="drawer-inspector-cell">
+                    <div class="drawer-inspector-lbl">SAMPLE SIZE (M)</div>
+                    <div class="drawer-inspector-val" id="sb-stat-M">100</div>
+                </div>
+                <div class="drawer-inspector-cell">
+                    <div class="drawer-inspector-lbl">MEAN (n)</div>
+                    <div class="drawer-inspector-val" id="sb-stat-mean">1624.8</div>
+                </div>
+                <div class="drawer-inspector-cell">
+                    <div class="drawer-inspector-lbl">STD DEV (σ)</div>
+                    <div class="drawer-inspector-val" id="sb-stat-std">36.64</div>
+                </div>
+                <div class="drawer-inspector-cell">
+                    <div class="drawer-inspector-lbl">BIN WIDTH (d)</div>
+                    <div class="drawer-inspector-val" id="sb-stat-d">10</div>
+                </div>
+            </div>
+            <div class="drawer-inspector-badge chi-pass" id="sb-chi-badge">
+                PASS: FIT CONFIRMED
+            </div>
+        </div>
+    </aside>
+
+    <!-- ============================================================
+         TOP APP BAR (WITH MODEL SWITCHER)
+         ============================================================ -->
+    <header class="top-navbar">
+        <div class="nav-left-group">
+            <button class="drawer-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle Navigation">
+                <span class="drawer-bar"></span>
+                <span class="drawer-bar"></span>
+                <span class="drawer-bar"></span>
+            </button>
+            <div class="brand-title-group">
+                <div class="brand-name">
+                    RADSTAT SNAP
+                    <span class="brand-tag">UNIFIED</span>
+                </div>
+                <div class="brand-desc">RADIATION FLUCTUATION & DISTRIBUTION MODEL ANALYZER</div>
+            </div>
+        </div>
+
+        <!-- Model Switcher Toggle -->
+        <div class="model-switcher-box">
+            <button class="model-switch-btn active" id="btn-model-gauss" onclick="setModelMode('gauss')">GAUSSIAN (HIGH COUNT)</button>
+            <button class="model-switch-btn" id="btn-model-poisson" onclick="setModelMode('poisson')">POISSON (0-19 RANGE)</button>
+        </div>
+
+        <div class="top-status-pills">
+            <span class="status-pill" id="badge-source">SOURCE: Co-60 (HIGH COUNT)</span>
+            <span class="status-pill" id="badge-count">M = 100 SAMPLES</span>
+            <span class="status-pill" id="badge-bin">d = 10 (20 BINS)</span>
+        </div>
+    </header>
+
+    <!-- ============================================================
+         MAIN WORKSPACE (PURE WHITE)
+         ============================================================ -->
+    <main class="main-workspace">
+
+        <!-- ============================================================
+             MODULE 01: DATA ACQUISITION
+             ============================================================ -->
+        <div id="tab-input" class="tab-content-pane active">
+            <div class="section-header-title">
+                <div class="header-nav-toolbar">
+                    <button class="mod-nav-btn prev" onclick="navigateStep(-1)" disabled>
+                        <span class="nav-arrow">←</span> PREV
+                    </button>
+                    <span class="header-title-text" id="header-mod-01">MODULE 01 // DATA INGESTION & BIN ALLOCATION</span>
+                    <button class="mod-nav-btn next" onclick="navigateStep(1)">
+                        NEXT <span class="nav-arrow">→</span>
+                    </button>
+                </div>
+                <div class="header-step-indicator">STEP 1 / 6</div>
+            </div>
+
+            <!-- Ingest Box -->
+            <div class="ingest-box">
+                <div class="card-title-text" style="margin-bottom: 8px;">BATCH DATA INGESTION (UNLIMITED SAMPLES)</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                    Paste count rate measurements from Excel, CSV, or text (delimited by spaces, tabs, commas, or newlines). Dynamic allocation with no sample size limit.
+                </p>
+                <textarea id="paste-input-area" class="ingest-textarea" placeholder="Paste raw count dataset here (e.g., 50, 100, 200, 500+ records)..."></textarea>
+                <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="flat-btn btn-main" onclick="parsePastedData()">INGEST & SYNC MATRIX</button>
+                    <button class="flat-btn btn-ghost" onclick="document.getElementById('paste-input-area').value=''">CLEAR TEXT</button>
+                </div>
+            </div>
+
+            <!-- Matrix Card -->
+            <div class="white-card">
+                <div class="white-card-header">
+                    <div>
+                        <span class="card-title-text">COUNT RATE OBSERVATION MATRIX</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--primary); margin-left: 8px;">(<span id="grid-data-count">100</span> ACTIVE SAMPLES)</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="flat-btn btn-ghost btn-small" onclick="addRow(5)">ADD 5 ROWS (+25)</button>
+                        <button class="flat-btn btn-ghost btn-small" onclick="addRow(1)">ADD 1 ROW (+5)</button>
+                        <button class="flat-btn btn-ghost btn-small" onclick="removeRow()">REMOVE ROW</button>
+                        <button class="flat-btn btn-ghost btn-small" onclick="resetSampleData()">RESET DEFAULT SAMPLE</button>
+                        <button class="flat-btn btn-ghost btn-small" onclick="clearData()">CLEAR ALL</button>
+                    </div>
+                </div>
+
+                <div class="table-scroll-container" style="max-height: 420px; overflow-y: auto;">
+                    <table class="input-matrix-table" id="grid-input-table">
+                        <!-- Populated by JS -->
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bin Config Card -->
+            <div class="white-card">
+                <div class="card-title-text" style="margin-bottom: 14px;">BINNING CONFIGURATION & RANGE PARTITIONING</div>
+
+                <div class="config-grid">
+                    <div class="config-unit">
+                        <label for="input-min">MINIMUM VALUE (Min)</label>
+                        <input type="number" id="input-min" value="1550" oninput="onStudentSettingChange()">
+                        <span class="field-subtext">Minimum observed value</span>
+                    </div>
+
+                    <div class="config-unit">
+                        <label for="input-max">MAXIMUM VALUE (Max)</label>
+                        <input type="number" id="input-max" value="1731" oninput="onStudentSettingChange()">
+                        <span class="field-subtext">Maximum observed value</span>
+                    </div>
+
+                    <div class="config-unit" id="unit-calc-width">
+                        <label>THEORETICAL BIN WIDTH (Max-Min)/20</label>
+                        <input type="text" id="calc-width-raw" value="9.05" readonly style="background: var(--bg-subtle); color: var(--text-muted);">
+                        <span class="field-subtext">Reference 20-bin width</span>
+                    </div>
+
+                    <div class="config-unit">
+                        <label for="input-width" style="color: var(--primary);">BIN WIDTH (d) *</label>
+                        <input type="number" id="input-width" value="10" oninput="onStudentSettingChange()" style="border-color: var(--primary); background: #f0f9ff;">
+                        <span class="field-subtext" id="subtext-bin-width">Discrete integer bin width (Use d=1 for standard Poisson)</span>
+                    </div>
+
+                    <div class="config-unit">
+                        <label for="input-start-min">CLASS 1 START BOUNDARY</label>
+                        <input type="number" id="input-start-min" value="1540" oninput="onStudentSettingChange()">
+                        <span class="field-subtext">Initial lower partition limit</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 22px; display: flex; justify-content: flex-end;">
+                    <button class="flat-btn btn-main" onclick="applyStudentSettings()">APPLY BIN CONFIGURATION</button>
+                </div>
+            </div>
+
+            <!-- Bin Preview -->
+            <div class="white-card">
+                <div class="card-title-text" style="margin-bottom: 14px;">BIN INTERVAL ALLOCATION PREVIEW</div>
+                <div class="table-scroll-container">
+                    <table class="white-table">
+                        <thead>
+                            <tr>
+                                <th>BIN NO.</th>
+                                <th>INTERVAL RANGE (Min 〜 Max)</th>
+                                <th>UPPER BOUND</th>
+                                <th>MIDPOINT m_i</th>
+                                <th>MEASURED FREQUENCY s_i</th>
+                                <th>PERCENTILE (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bin-preview-tbody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Module Bottom Navigation -->
+            <div class="module-bottom-nav">
+                <button class="flat-btn btn-ghost btn-bottom-prev" onclick="navigateStep(-1)" disabled>← PREV</button>
+                <span class="bottom-step-indicator">STEP 1 OF 6</span>
+                <button class="flat-btn btn-main btn-bottom-next" onclick="navigateStep(1)">NEXT →</button>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             MODULE 02: ANALYTICS & FIT
+             ============================================================ -->
+        <div id="tab-dashboard" class="tab-content-pane">
+            <div class="section-header-title">
+                <div class="header-nav-toolbar">
+                    <button class="mod-nav-btn prev" onclick="navigateStep(-1)">
+                        <span class="nav-arrow">←</span> PREV
+                    </button>
+                    <span class="header-title-text" id="dashboard-header-title">MODULE 02 // ANALYTICS & DISTRIBUTION MODEL FIT</span>
+                    <button class="mod-nav-btn next" onclick="navigateStep(1)">
+                        NEXT <span class="nav-arrow">→</span>
+                    </button>
+                </div>
+                <div class="header-step-indicator">STEP 2 / 6</div>
+            </div>
+
+            <div class="dashboard-split-layout">
+                
+                <!-- Chart Card -->
+                <div class="white-card">
+                    <div class="white-card-header">
+                        <span class="card-title-text" id="chart-card-title">HISTOGRAM VS THEORETICAL FIT</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="flat-btn btn-ghost btn-small active" id="btn-percent" onclick="updateChartMode('percent')">PERCENTILE (%)</button>
+                            <button class="flat-btn btn-ghost btn-small" id="btn-count" onclick="updateChartMode('count')">FREQUENCY (COUNTS)</button>
+                        </div>
+                    </div>
+                    <div class="chart-container-box">
+                        <canvas id="co60Chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Stats Card -->
+                <div class="white-card">
+                    <div class="card-title-text" style="margin-bottom: 14px;">STATISTICAL SUMMARY</div>
+                    <div class="stat-metrics-stack">
+                        <div class="stat-line-item">
+                            <span class="stat-line-label">SAMPLE SIZE (M)</span>
+                            <span class="stat-line-value" id="stat-M">100</span>
+                        </div>
+                        <div class="stat-line-item">
+                            <span class="stat-line-label">MIN VALUE (Min)</span>
+                            <span class="stat-line-value" id="stat-min">1550</span>
+                        </div>
+                        <div class="stat-line-item">
+                            <span class="stat-line-label">MAX VALUE (Max)</span>
+                            <span class="stat-line-value" id="stat-max">1731</span>
+                        </div>
+                        <div class="stat-line-item">
+                            <span class="stat-line-label">BIN WIDTH (d)</span>
+                            <span class="stat-line-value" id="stat-d">10</span>
+                        </div>
+                        <div class="stat-line-item">
+                            <span class="stat-line-label">SAMPLE MEAN (n)</span>
+                            <span class="stat-line-value" id="stat-mean">1624.75</span>
+                        </div>
+                        <div class="stat-line-item">
+                            <span class="stat-line-label">STD DEV (σ)</span>
+                            <span class="stat-line-value" id="stat-std">36.64</span>
+                        </div>
+                        <div class="stat-line-item">
+                            <span class="stat-line-label">VARIANCE (s²)</span>
+                            <span class="stat-line-value" id="stat-var">1342.17</span>
+                        </div>
+                        <div class="stat-line-item" id="row-fano-factor" style="display:none;">
+                            <span class="stat-line-label">VARIANCE / MEAN RATIO (s²/n)</span>
+                            <span class="stat-line-value" id="stat-fano" style="color:var(--primary);">1.00</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Chi-Square Panel -->
+            <div class="chi-eval-panel">
+                <div class="chi-top-row">
+                    <div class="chi-title-label">CHI-SQUARE (χ²) GOODNESS-OF-FIT EVALUATION</div>
+                    <div id="chi-status-badge" class="chi-badge-pill chi-pass">
+                        PASS: FIT CONFIRMED
+                    </div>
+                </div>
+
+                <div class="chi-grid-stats">
+                    <div class="chi-stat-card">
+                        <div class="chi-stat-tag">CALCULATED CHI-2 (χ²)</div>
+                        <div class="chi-stat-number" id="chi-val-display" style="color: var(--primary);">15.82</div>
+                    </div>
+                    <div class="chi-stat-card">
+                        <div class="chi-stat-tag">CRITICAL THRESHOLD</div>
+                        <div class="chi-stat-number" id="chi-critical-display" style="color: var(--danger);">27.59</div>
+                    </div>
+                    <div class="chi-stat-card">
+                        <div class="chi-stat-tag" id="chi-dof-label">DEGREES OF FREEDOM (ν = K-3)</div>
+                        <div class="chi-stat-number" id="chi-dof-display">17</div>
+                    </div>
+                    <div class="chi-stat-card">
+                        <div class="chi-stat-tag">SIGNIFICANCE LEVEL</div>
+                        <div class="chi-stat-number" style="color: var(--text-muted); font-size: 1.15rem;">α = 0.05 (5%)</div>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; font-family: var(--font-mono);" id="chi-meter-label">
+                    [FIT RATIO METER] (Optimal: χ² ≤ 27.59)
+                </div>
+                <div class="chi-progress-track">
+                    <div class="chi-progress-fill" id="chi-meter-bar" style="width: 57%;"></div>
+                    <div class="chi-progress-marker" id="chi-meter-marker" title="Critical Limit"></div>
+                </div>
+
+                <div class="chi-detail-text" id="chi-desc-box">
+                    <!-- Dynamic text -->
+                </div>
+            </div>
+
+            <!-- Module Bottom Navigation -->
+            <div class="module-bottom-nav">
+                <button class="flat-btn btn-ghost btn-bottom-prev" onclick="navigateStep(-1)">← PREV</button>
+                <span class="bottom-step-indicator">STEP 2 OF 6</span>
+                <button class="flat-btn btn-main btn-bottom-next" onclick="navigateStep(1)">NEXT →</button>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             MODULE 03: FREQUENCY MATRIX
+             ============================================================ -->
+        <div id="tab-table" class="tab-content-pane">
+            <div class="section-header-title">
+                <div class="header-nav-toolbar">
+                    <button class="mod-nav-btn prev" onclick="navigateStep(-1)">
+                        <span class="nav-arrow">←</span> PREV
+                    </button>
+                    <span class="header-title-text" id="table-section-title">MODULE 03 // FULL FREQUENCY MATRIX & MODEL TABLE</span>
+                    <button class="mod-nav-btn next" onclick="navigateStep(1)">
+                        NEXT <span class="nav-arrow">→</span>
+                    </button>
+                </div>
+                <div class="header-step-indicator">STEP 3 / 6</div>
+            </div>
+
+            <div class="table-scroll-container">
+                <table class="white-table">
+                    <thead>
+                        <tr>
+                            <th>BIN NO.</th>
+                            <th>INTERVAL RANGE (Min 〜 Max)</th>
+                            <th>BIN VECTOR</th>
+                            <th>MIDPOINT m_i</th>
+                            <th>OBSERVED FREQ s_i</th>
+                            <th>MEASURED (%)</th>
+                            <th>m_i × s_i</th>
+                            <th>s_i × (m_i - n)²</th>
+                            <th id="th-pdf-label">THEORETICAL DENSITY</th>
+                            <th class="highlight-col" id="th-theory-label">THEORY (%) P(m_i)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row" id="table-foot">
+                            <!-- Populated by JS -->
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Module Bottom Navigation -->
+            <div class="module-bottom-nav">
+                <button class="flat-btn btn-ghost btn-bottom-prev" onclick="navigateStep(-1)">← PREV</button>
+                <span class="bottom-step-indicator">STEP 3 OF 6</span>
+                <button class="flat-btn btn-main btn-bottom-next" onclick="navigateStep(1)">NEXT →</button>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             MODULE 04: REPORT EXPORT
+             ============================================================ -->
+        <div id="tab-report" class="tab-content-pane">
+            <div class="section-header-title">
+                <div class="header-nav-toolbar">
+                    <button class="mod-nav-btn prev" onclick="navigateStep(-1)">
+                        <span class="nav-arrow">←</span> PREV
+                    </button>
+                    <span class="header-title-text" id="report-section-title">MODULE 04 // FORMAL REPORT EXPORT & THEORETICAL FORMULATION</span>
+                    <button class="mod-nav-btn next" onclick="navigateStep(1)">
+                        NEXT <span class="nav-arrow">→</span>
+                    </button>
+                </div>
+                <div class="header-step-indicator">STEP 4 / 6</div>
+            </div>
+
+            <div class="report-math-presentation" id="report-math-box">
+                <!-- Dynamically populated based on mode -->
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 14px;">
+                <button class="flat-btn btn-accent" onclick="copyReportTableToClipboard()">COPY REPORT DATA TABLE TO CLIPBOARD</button>
+            </div>
+
+            <div class="table-scroll-container">
+                <table class="white-table" id="report-final-table">
+                    <thead>
+                        <tr>
+                            <th>BIN NO.</th>
+                            <th>INTERVAL RANGE</th>
+                            <th>MIDPOINT m_i</th>
+                            <th>MEASURED s_i</th>
+                            <th>PERCENTILE (%)</th>
+                            <th id="report-th-theory-density">THEORETICAL DENSITY</th>
+                            <th class="highlight-col" id="report-th-theory-pct">THEORETICAL P(m_i) [%]</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row" id="report-table-foot">
+                            <!-- Populated by JS -->
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Module Bottom Navigation -->
+            <div class="module-bottom-nav">
+                <button class="flat-btn btn-ghost btn-bottom-prev" onclick="navigateStep(-1)">← PREV</button>
+                <span class="bottom-step-indicator">STEP 4 OF 6</span>
+                <button class="flat-btn btn-main btn-bottom-next" onclick="navigateStep(1)">NEXT →</button>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             MODULE 05: PROTOCOL GUIDE (SWITCHES BETWEEN GAUSS & POISSON)
+             ============================================================ -->
+        <div id="tab-workflow" class="tab-content-pane">
+            <div class="section-header-title">
+                <div class="header-nav-toolbar">
+                    <button class="mod-nav-btn prev" onclick="navigateStep(-1)">
+                        <span class="nav-arrow">←</span> PREV
+                    </button>
+                    <span class="header-title-text" id="workflow-header-title">MODULE 05 // PROTOCOL GUIDE (ガウス分布 解析手順)</span>
+                    <button class="mod-nav-btn next" onclick="navigateStep(1)">
+                        NEXT <span class="nav-arrow">→</span>
+                    </button>
+                </div>
+                <div class="header-step-indicator">STEP 5 / 6</div>
+            </div>
+
+            <!-- Container for Dynamically Rendered Steps (All in Japanese) -->
+            <div class="protocol-steps-grid" id="protocol-steps-container">
+                <!-- Injected by JavaScript according to currentModelMode -->
+            </div>
+
+            <!-- Module Bottom Navigation -->
+            <div class="module-bottom-nav">
+                <button class="flat-btn btn-ghost btn-bottom-prev" onclick="navigateStep(-1)">← PREV</button>
+                <span class="bottom-step-indicator">STEP 5 OF 6</span>
+                <button class="flat-btn btn-main btn-bottom-next" onclick="navigateStep(1)">NEXT →</button>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             MODULE 06: TECHNICAL NOTES
+             ============================================================ -->
+        <div id="tab-trouble" class="tab-content-pane">
+            <div class="section-header-title">
+                <div class="header-nav-toolbar">
+                    <button class="mod-nav-btn prev" onclick="navigateStep(-1)">
+                        <span class="nav-arrow">←</span> PREV
+                    </button>
+                    <span class="header-title-text" id="trouble-section-title">MODULE 06 // TECHNICAL SPECIFICATIONS & QUALITY ASSURANCE</span>
+                    <button class="mod-nav-btn next" onclick="navigateStep(1)" disabled>
+                        NEXT <span class="nav-arrow">→</span>
+                    </button>
+                </div>
+                <div class="header-step-indicator">STEP 6 / 6</div>
+            </div>
+
+            <div class="protocol-steps-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="white-card" style="border-top: 3px solid var(--primary);">
+                    <div class="card-title-text" style="color: var(--primary-dark); margin-bottom: 8px;">GAUSSIAN VS POISSON SELECTION REGIME</div>
+                    <p style="font-size: 0.9rem; color: var(--text-body); line-height: 1.6;">
+                        In radiation metrology, the Poisson distribution governs discrete nuclear decay events. When the average count rate is high ($n > 20$), the Poisson distribution asymptotically converges to the continuous Gaussian (Normal) distribution. For low counts ($n \le 20$, such as natural background or 0-19 range events), the discrete asymmetric Poisson distribution must be utilized.
+                    </p>
+                </div>
+
+                <div class="white-card" style="border-top: 3px solid var(--warning);">
+                    <div class="card-title-text" style="color: var(--warning); margin-bottom: 8px;">VARIANCE EQUALS MEAN CHARACTERISTIC (s² ≈ n)</div>
+                    <p style="font-size: 0.9rem; color: var(--text-body); line-height: 1.6;">
+                        A defining mathematical hallmark of the Poisson distribution is that its variance is equal to its mean ($\sigma^2 = n$). The ratio of sample variance to mean ($s^2/n$, Fano factor) approaching 1.0 serves as strong physical verification of purely random radioactive disintegration.
+                    </p>
+                </div>
+
+                <div class="white-card" style="border-top: 3px solid var(--accent);">
+                    <div class="card-title-text" style="color: var(--accent); margin-bottom: 8px;">DEGREES OF FREEDOM & ESTIMATED PARAMETERS</div>
+                    <p style="font-size: 0.9rem; color: var(--text-body); line-height: 1.6;">
+                        For the Chi-Square goodness-of-fit test:
+                        <br>• Gaussian Model: $\nu = K - 1 - 2 = K - 3$ (estimating both mean $n$ and standard deviation $\sigma$).
+                        <br>• Poisson Model: $\nu = K - 1 - 1 = K - 2$ (estimating only mean parameter $n$).
+                    </p>
+                </div>
+
+                <div class="white-card" style="border-top: 3px solid var(--success);">
+                    <div class="card-title-text" style="color: var(--success); margin-bottom: 8px;">RECURRENCE RELATION IN POISSON DISTRIBUTION</div>
+                    <p style="font-size: 0.9rem; color: var(--text-body); line-height: 1.6;">
+                        Instead of computing large factorials directly, the Poisson probabilities can be iteratively calculated using the recurrence formula:
+                        <br><b>$P(0) = e^{-n}$</b>
+                        <br><b>$P(m+1) = \frac{n}{m+1} P(m)$</b>
+                        <br>This recurrence relation drastically simplifies numerical evaluation and prevents factorial arithmetic overflow.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Module Bottom Navigation -->
+            <div class="module-bottom-nav">
+                <button class="flat-btn btn-ghost btn-bottom-prev" onclick="navigateStep(-1)">← PREV</button>
+                <span class="bottom-step-indicator">STEP 6 OF 6</span>
+                <button class="flat-btn btn-main btn-bottom-next" onclick="navigateStep(1)" disabled>NEXT →</button>
+            </div>
+        </div>
+
+        <footer>
+            RADIATION METROLOGY LABORATORY // RADSTAT SNAP v2.0 // UNIFIED WORKBENCH
+        </footer>
+
+    </main>
+
+    <!-- ============================================================
+         CORE SCRIPTING (UNIFIED GAUSSIAN & POISSON)
+         ============================================================ -->
+    <script>
+        // Sample Co-60 Gaussian Dataset (High Count, Mean ~ 1624.8)
+        const sampleCo60Data = [
+            1634, 1731, 1600, 1614, 1598, 1585, 1567, 1641, 1595, 1603, 1660, 1550, 1677, 1561, 1612, 1699, 1637, 1665, 1701, 1704,
+            1626, 1654, 1617, 1580, 1672, 1597, 1594, 1676, 1672, 1594, 1635, 1623, 1679, 1652, 1563, 1621, 1635, 1593, 1681, 1656,
+            1550, 1576, 1679, 1579, 1582, 1627, 1634, 1619, 1628, 1703, 1656, 1654, 1690, 1627, 1552, 1632, 1614, 1590, 1658, 1624,
+            1657, 1637, 1610, 1608, 1648, 1614, 1575, 1635, 1668, 1697, 1609, 1619, 1608, 1668, 1616, 1611, 1557, 1607, 1604, 1599,
+            1614, 1571, 1641, 1599, 1613, 1609, 1629, 1636, 1601, 1592, 1595, 1550, 1612, 1599, 1608, 1598, 1623, 1619, 1607, 1605
+        ];
+
+        // Sample Low-Count Poisson Dataset (Range: 0 - 19, 100 Samples, Mean ~ 8.86)
+        const samplePoissonData = [
+            8, 12,  6,  9,  5, 11,  8, 14,  7, 10,
+            3,  8, 13,  9,  6, 10,  7, 12,  8, 15,
+            6,  9,  7, 11,  4,  8, 10,  7, 13,  9,
+            5, 12,  8, 16,  7, 10,  6, 11,  9,  4,
+            8, 14,  7, 10,  5,  9, 12,  8,  6, 11,
+            7, 13,  9,  6, 10,  8, 15,  7, 11,  5,
+            9,  8, 12,  7, 10,  6, 14,  8, 11,  9,
+            4,  8, 13,  7, 10,  6, 12,  8,  9, 16,
+            7, 11,  5, 10,  8, 14,  6,  9, 12,  7,
+            0,  8, 17,  5, 10,  8, 19,  6, 11,  8
+        ];
+
+        // Global State Variables
+        let currentModelMode = 'gauss'; // 'gauss' or 'poisson'
+        let currentRawData = [...sampleCo60Data];
+        let studentMin = 1550;
+        let studentMax = 1731;
+        let binWidth = 10;
+        let startMin = 1540;
+
+        let computedMean = 1624.75;
+        let computedStdDev = 36.636;
+        let processedRows = [];
+        let computedChiSquare = 0;
+
+        // Drawer Navigation Functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('drawer-sidebar');
+            const overlay = document.getElementById('drawer-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('drawer-sidebar');
+            const overlay = document.getElementById('drawer-overlay');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Module Navigation Definitions
+        const MODULE_TABS = [
+            { id: 'input', code: '01', title: 'MODULE 01 // DATA INGESTION & BIN ALLOCATION' },
+            { id: 'dashboard', code: '02', title: 'MODULE 02 // ANALYTICS & DISTRIBUTION MODEL FIT' },
+            { id: 'table', code: '03', title: 'MODULE 03 // FULL FREQUENCY MATRIX & MODEL TABLE' },
+            { id: 'report', code: '04', title: 'MODULE 04 // FORMAL REPORT EXPORT & THEORETICAL FORMULATION' },
+            { id: 'workflow', code: '05', title: 'MODULE 05 // PROTOCOL GUIDE' },
+            { id: 'trouble', code: '06', title: 'MODULE 06 // TECHNICAL SPECIFICATIONS & QUALITY ASSURANCE' }
+        ];
+
+        function switchTab(btnElement, tabId) {
+            document.querySelectorAll('.drawer-tab-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content-pane').forEach(content => content.classList.remove('active'));
+
+            const targetBtn = btnElement || document.querySelector(`.drawer-tab-item[data-tab="${tabId}"]`);
+            if (targetBtn) targetBtn.classList.add('active');
+
+            const targetPane = document.getElementById('tab-' + tabId);
+            if (targetPane) targetPane.classList.add('active');
+
+            closeSidebar();
+
+            if(tabId === 'dashboard') {
+                setTimeout(() => {
+                    initChart();
+                }, 50);
+            }
+
+            updateNavButtonsState();
+        }
+
+        function updateNavButtonsState() {
+            const activePane = document.querySelector('.tab-content-pane.active');
+            if (!activePane) return;
+            const currentTabId = activePane.id.replace('tab-', '');
+            const currentIndex = MODULE_TABS.findIndex(m => m.id === currentTabId);
+            if (currentIndex === -1) return;
+
+            const total = MODULE_TABS.length;
+
+            document.querySelectorAll('.tab-content-pane').forEach((pane) => {
+                const paneTabId = pane.id.replace('tab-', '');
+                const paneIndex = MODULE_TABS.findIndex(m => m.id === paneTabId);
+                if (paneIndex === -1) return;
+
+                const prevBtns = pane.querySelectorAll('.mod-nav-btn.prev, .btn-bottom-prev');
+                const nextBtns = pane.querySelectorAll('.mod-nav-btn.next, .btn-bottom-next');
+                const indicators = pane.querySelectorAll('.header-step-indicator, .bottom-step-indicator');
+
+                prevBtns.forEach(b => {
+                    b.disabled = (paneIndex === 0);
+                });
+                nextBtns.forEach(b => {
+                    b.disabled = (paneIndex === total - 1);
+                });
+                indicators.forEach(ind => {
+                    if (ind.classList.contains('header-step-indicator')) {
+                        ind.innerText = `STEP ${paneIndex + 1} / ${total}`;
+                    } else {
+                        ind.innerText = `STEP ${paneIndex + 1} OF ${total}`;
+                    }
+                });
+            });
+        }
+
+        function navigateStep(direction) {
+            const activePane = document.querySelector('.tab-content-pane.active');
+            if (!activePane) return;
+            const currentTabId = activePane.id.replace('tab-', '');
+            const currentIndex = MODULE_TABS.findIndex(m => m.id === currentTabId);
+            if (currentIndex === -1) return;
+
+            const targetIndex = currentIndex + direction;
+            if (targetIndex >= 0 && targetIndex < MODULE_TABS.length) {
+                const targetTab = MODULE_TABS[targetIndex];
+                switchTab(null, targetTab.id);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Keyboard arrow navigation
+        document.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+                return;
+            }
+            if (e.key === 'ArrowLeft') {
+                navigateStep(-1);
+            } else if (e.key === 'ArrowRight') {
+                navigateStep(1);
+            }
+        });
+
+        // ============================================================
+        // MATHEMATICAL HELPERS
+        // ============================================================
+        // Normal PDF
+        function normPDF(x, u, s) {
+            if(s <= 0) return 0;
+            return (1 / (Math.sqrt(2 * Math.PI) * s)) * Math.exp(-Math.pow(x - u, 2) / (2 * Math.pow(s, 2)));
+        }
+
+        // Exact Log-Factorial Helper: ln(m!) = sum(ln k)
+        function logFactorial(n) {
+            if (n <= 1) return 0;
+            let logSum = 0;
+            for (let i = 2; i <= n; i++) {
+                logSum += Math.log(i);
+            }
+            return logSum;
+        }
+
+        // Exact Poisson Discrete PMF: P(m; n) = exp(m*ln(n) - n - ln(m!))
+        function poissonPMF(m, n) {
+            if (n <= 0) return (m === 0 ? 1 : 0);
+            if (m < 0) return 0;
+            const logP = m * Math.log(n) - n - logFactorial(m);
+            return Math.exp(logP);
+        }
+
+        // Chi-Square Critical Value (alpha = 0.05)
+        function getChi2Critical(dof) {
+            const table = {
+                1: 3.84,  2: 5.99,  3: 7.81,  4: 9.49,  5: 11.07,
+                6: 12.59, 7: 14.07, 8: 15.51, 9: 16.92, 10: 18.31,
+                11: 19.68, 12: 21.03, 13: 22.36, 14: 23.68, 15: 25.00,
+                16: 26.30, 17: 27.59, 18: 28.87, 19: 30.14, 20: 31.41,
+                21: 32.67, 22: 33.92, 23: 35.17, 24: 36.42, 25: 37.65,
+                26: 38.89, 27: 40.11, 28: 41.34, 29: 42.56, 30: 43.77
+            };
+            if (table[dof]) return table[dof];
+            if (dof < 1) return 3.84;
+            const z = 1.64485;
+            return Math.round(dof * Math.pow(1 - 2 / (9 * dof) + z * Math.sqrt(2 / (9 * dof)), 3) * 100) / 100;
+        }
+
+        // ============================================================
+        // MODEL MODE TOGGLE (GAUSSIAN VS POISSON)
+        // ============================================================
+        function setModelMode(mode) {
+            currentModelMode = mode;
+
+            document.getElementById('btn-model-gauss').classList.toggle('active', mode === 'gauss');
+            document.getElementById('btn-model-poisson').classList.toggle('active', mode === 'poisson');
+            document.getElementById('sb-model-lbl').innerText = (mode === 'gauss' ? 'GAUSSIAN' : 'POISSON');
+
+            const sourceBadge = document.getElementById('badge-source');
+            const dofLabel = document.getElementById('chi-dof-label');
+            const fanoRow = document.getElementById('row-fano-factor');
+            const calcWidthUnit = document.getElementById('unit-calc-width');
+            const subtextWidth = document.getElementById('subtext-bin-width');
+            const thPdf = document.getElementById('th-pdf-label');
+            const thTheory = document.getElementById('th-theory-label');
+
+            if (mode === 'gauss') {
+                sourceBadge.innerText = 'SOURCE: Co-60 (HIGH COUNT)';
+                dofLabel.innerText = 'DEGREES OF FREEDOM (ν = K-3)';
+                fanoRow.style.display = 'none';
+                calcWidthUnit.style.display = 'flex';
+                subtextWidth.innerText = 'Discrete integer bin width (e.g. 10)';
+                thPdf.innerText = 'GAUSSIAN PDF f(m_i)';
+                thTheory.innerText = 'THEORY (%) P(m_i)';
+                currentRawData = [...sampleCo60Data];
+                document.getElementById('input-min').value = 1550;
+                document.getElementById('input-max').value = 1731;
+                document.getElementById('input-width').value = 10;
+                document.getElementById('input-start-min').value = 1540;
+            } else {
+                sourceBadge.innerText = 'SOURCE: POISSON (0-19 RANGE)';
+                dofLabel.innerText = 'DEGREES OF FREEDOM (ν = K-2)';
+                fanoRow.style.display = 'flex';
+                calcWidthUnit.style.display = 'none';
+                subtextWidth.innerText = 'Standard discrete bin width is d = 1 (Range: 0-19)';
+                thPdf.innerText = 'POISSON PROBABILITY P(m_i)';
+                thTheory.innerText = 'THEORY (%) P(m_i)';
+                currentRawData = [...samplePoissonData];
+                document.getElementById('input-min').value = 0;
+                document.getElementById('input-max').value = 19;
+                document.getElementById('input-width').value = 1;
+                document.getElementById('input-start-min').value = 0;
+            }
+
+            renderProtocolSteps();
+            renderReportMathBox();
+            renderInputGrid();
+            recalculateAll();
+        }
+
+        // ============================================================
+        // PROTOCOL STEPS RENDERER (ALL JAPANESE CONTENT)
+        // ============================================================
+        function renderProtocolSteps() {
+            const container = document.getElementById('protocol-steps-container');
+            const titleEl = document.getElementById('workflow-header-title');
+            if(!container) return;
+
+            if (currentModelMode === 'gauss') {
+                titleEl.innerText = "MODULE 05 // PROTOCOL GUIDE (高計数率・ガウス分布 解析手順)";
+                container.innerHTML = `
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">01</div>
+                            <div class="step-headline">手順 1: 測定データの整理</div>
+                        </div>
+                        <div class="step-paragraph">GMサーベイメータで10秒間測定した高計数値データを一覧として整理・配列化します。</div>
+                        <div class="step-formula-box">実測データの例: 1634, 1731, 1600, 1614, 1598, ...</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">02</div>
+                            <div class="step-headline">手順 2: データ全体の最大値と最小値の探索</div>
+                        </div>
+                        <div class="step-paragraph">測定データの中から最も大きい値（最大値）と最も小さい値（最小値）を見つけ出し、データ全体のばらつきの範囲（レンジ）を把握します。</div>
+                        <div class="step-formula-box">実測データ例: 最小値 = 1550, 最大値 = 1731</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">03</div>
+                            <div class="step-headline">手順 3: データを適切なグループ（階級）に分割</div>
+                        </div>
+                        <div class="step-paragraph">(最大値 - 最小値) ÷ 20 から適切な階級幅（例: 階級幅 10 または 24 など）を設定し、データを整理しやすい区間に区分けします。</div>
+                        <div class="step-formula-box">例: 1540〜1549, 1550〜1559, ... の区間設定</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">04</div>
+                            <div class="step-headline">手順 4: 各階級の代表値（中央の数値）を決定</div>
+                        </div>
+                        <div class="step-paragraph">各区間の真ん中の値（中央値）を、その階級を代表する数値「階級値 m_i」として設定します。</div>
+                        <div class="step-formula-box">例: 1550〜1559 の区間の階級値 ➔ 1554.5</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">05</div>
+                            <div class="step-headline">手順 5: 各区間に含まれるデータの個数（度数）をカウント</div>
+                        </div>
+                        <div class="step-paragraph">測定データがどの区間に何回入ったか（出現回数 s_i）を集計します。（合計は総測定回数 M 回）</div>
+                        <div class="step-formula-box">例: 1550〜1559 の区間 ➔ 出現回数 4 回</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">06</div>
+                            <div class="step-headline">手順 6: 全測定データの平均値 n を算出</div>
+                        </div>
+                        <div class="step-paragraph">測定データすべての算術平均値 n を計算し、統計分布の中心座標（山の一番高い位置）を確認します。</div>
+                        <div class="step-formula-box">計算結果例: 平均値 n = 1624.75</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">07</div>
+                            <div class="step-headline">手順 7: データのばらつき具合（標準偏差 σ）を算出</div>
+                        </div>
+                        <div class="step-paragraph">測定値が平均値からどの程度散らばっているかを示す「標準偏差 σ」を求め、分布の広がりの幅を評価します。</div>
+                        <div class="step-formula-box">計算結果例: 標準偏差 σ = 36.64</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">08</div>
+                            <div class="step-headline">手順 8: ガウス分布（正規分布）による理論確率の計算</div>
+                        </div>
+                        <div class="step-paragraph">平均値 n と標準偏差 σ をもとに、正規確率密度関数 f(m_i) に階級幅 d を掛けて各区間の理論出現確率 P(m_i) を算出します。</div>
+                        <div class="step-formula-box">全区間の理論確率の合計 ➔ 100%</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">09</div>
+                            <div class="step-headline">手順 9: 実測ヒストグラムとガウス理論曲線の比較グラフ作成</div>
+                        </div>
+                        <div class="step-paragraph">実測度数ヒストグラム（棒グラフ）とガウス理論値（連続曲線）を重ね合わせてプロットし、カイ二乗検定 (ν = K-3) で適合性を検証します。</div>
+                        <div class="step-formula-box">統計検証: カイ二乗適合度検定 (有意水準 α = 0.05)</div>
+                    </div>
+                `;
+            } else {
+                titleEl.innerText = "MODULE 05 // PROTOCOL GUIDE (低計数率・ポアソン分布 0〜19範囲 解析手順)";
+                container.innerHTML = `
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">01</div>
+                            <div class="step-headline">手順 1: 0〜19範囲の測定データの整理</div>
+                        </div>
+                        <div class="step-paragraph">自然放射能や微弱線源の10秒間計数値データ（計数値が 0〜19 の範囲に分布するデータ群）を配列として整理します。</div>
+                        <div class="step-formula-box">実測データの例: 8, 12, 6, 9, 5, 11, 8, 14, ...</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">02</div>
+                            <div class="step-headline">手順 2: 最小値 (0) と最大値 (19) の確認</div>
+                        </div>
+                        <div class="step-paragraph">測定データ全体を精査し、最小値が 0、最大値が 19 の範囲に収まっていることを確認します。</div>
+                        <div class="step-formula-box">実測データ例: 最小値 Min = 0, 最大値 Max = 19</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">03</div>
+                            <div class="step-headline">手順 3: 階級幅 d = 1 の設定 (全20階級)</div>
+                        </div>
+                        <div class="step-paragraph">ポアソン事象は離散的な回数（0, 1, 2, ..., 19）をとるため、階級幅 d = 1 とし、0から19までの全20階級を設定します。</div>
+                        <div class="step-formula-box">区間設定: m = 0, 1, 2, ..., 19 (d = 1, 全20階級)</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">04</div>
+                            <div class="step-headline">手順 4: 各離散階級値 m_i の設定</div>
+                        </div>
+                        <div class="step-paragraph">各区間の整数計数値そのもの（0, 1, 2, ..., 19）をそのまま階級値 m_i として対応付けます。</div>
+                        <div class="step-formula-box">階級値: m_0 = 0, m_1 = 1, ..., m_19 = 19</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">05</div>
+                            <div class="step-headline">手順 5: 実測度数 s_i の集計</div>
+                        </div>
+                        <div class="step-paragraph">0から19までの各計数値 m_i が全測定（M回）の中で何回出現したか（実測度数 s_i）を集計し、実測頻度[%]を求めます。</div>
+                        <div class="step-formula-box">度数の合計: ∑ s_i = M 回 (100%)</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">06</div>
+                            <div class="step-headline">手順 6: 平均計数値 n の算出</div>
+                        </div>
+                        <div class="step-paragraph">全データの算術平均値 n を計算します。ポアソン分布はこの平均パラメータ n のみで一義的にプロファイルが決定されます。</div>
+                        <div class="step-formula-box">平均値 n = (∑ m_i · s_i) / M ≒ 8.86</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">07</div>
+                            <div class="step-headline">手順 7: ポアソン固有特性（分散 ≒ 平均）の検証</div>
+                        </div>
+                        <div class="step-paragraph">標本分散 s² を算出し、ポアソン分布の理論特性「理論分散 σ² = 平均 n」が成り立っているか（比率 s²/n ≒ 1.0）を確認します。</div>
+                        <div class="step-formula-box">検証指標: s² / n ≒ 1.0 (ポアソン分布の基本的特徴)</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">08</div>
+                            <div class="step-headline">手順 8: ポアソン確率の計算（定義式と漸化式）</div>
+                        </div>
+                        <div class="step-paragraph">平均値 n を用いて、各計数値の出現確率を計算します。<br>
+                        <b>【定義式】</b> P(m) = (n^m · e^(-n)) / m!<br>
+                        <b>【漸化式】</b> P(0) = e^(-n), &nbsp; P(m+1) = (n / (m+1)) · P(m)<br>
+                        漸化式を用いることで、前項の確率から順次掛け算で効率よく手計算・導出できます。</div>
+                        <div class="step-formula-box">P(0) = e^(-n), &nbsp; P(m+1) = [n / (m+1)] · P(m)</div>
+                    </div>
+                    <div class="protocol-step-box">
+                        <div class="step-header-area">
+                            <div class="step-num-pill">09</div>
+                            <div class="step-headline">手順 9: グラフ比較とカイ二乗適合度検定</div>
+                        </div>
+                        <div class="step-paragraph">0〜19の実測ヒストグラムとポアソン理論曲線を比較し、自由度 ν = K - 2 のカイ二乗検定により放射壊変のポアソン性を実証します。</div>
+                        <div class="step-formula-box">検定自由度: ν = 階級数 K - 1 - 1(n) = K - 2</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // REPORT MATH BOX RENDERER (WITH RECURRENCE RELATION)
+        // ============================================================
+        function renderReportMathBox() {
+            const box = document.getElementById('report-math-box');
+            const thDensity = document.getElementById('report-th-theory-density');
+            if(!box) return;
+
+            if (currentModelMode === 'gauss') {
+                thDensity.innerText = "GAUSSIAN PDF f(m_i)";
+                box.innerHTML = `
+                    <div class="report-math-caption">GAUSSIAN (NORMAL) DISTRIBUTION MATHEMATICAL SPECIFICATION</div>
+                    <div class="math-eq-stack">
+                        <div class="math-eq-card">
+                            ① Probability Density Function: &nbsp;
+                            <span class="math-variable">f</span>(<span class="math-variable">m<sub>i</sub></span>) = 
+                            <span style="display:inline-block; vertical-align:middle; text-align:center; font-size: 0.9em; margin: 0 4px;">
+                                <span style="border-bottom:1px solid; display:block; padding:0 2px;">1</span>
+                                <span style="display:block; padding:0 2px;">&radic;<span style="border-top:1px solid; padding-top:1px;">2&pi;</span>&sigma;</span>
+                            </span>
+                            exp
+                            <span style="font-size:1.2em;">&lpar;</span>
+                            &minus;
+                            <span style="display:inline-block; vertical-align:middle; text-align:center; font-size: 0.9em; margin: 0 2px;">
+                                <span style="border-bottom:1px solid; display:block; padding:0 2px;">(<span class="math-variable">m<sub>i</sub></span> &minus; <span class="math-variable">n</span>)<sup>2</sup></span>
+                                <span style="display:block; padding:0 2px;">2&sigma;<sup>2</sup></span>
+                            </span>
+                            <span style="font-size:1.2em;">&rpar;</span>
+                        </div>
+
+                        <div class="math-eq-card" style="border-color: #cbd5e1; background: #fafbfc;">
+                            ② Theoretical Relative Frequency: &nbsp;
+                            <span class="math-variable">P</span>(<span class="math-variable">m<sub>i</sub></span>) [%] = 
+                            <span class="math-variable">f</span>(<span class="math-variable">m<sub>i</sub></span>) &middot; <span class="math-variable">d</span> &middot; 100 = 
+                            <span style="display:inline-block; vertical-align:middle; text-align:center; font-size: 0.9em; margin: 0 4px;">
+                                <span style="border-bottom:1px solid; display:block; padding:0 2px;">100 &middot; <span class="math-variable">d</span></span>
+                                <span style="display:block; padding:0 2px;">&radic;<span style="border-top:1px solid; padding-top:1px;">2&pi;</span>&sigma;</span>
+                            </span>
+                            exp
+                            <span style="font-size:1.2em;">&lpar;</span>
+                            &minus;
+                            <span style="display:inline-block; vertical-align:middle; text-align:center; font-size: 0.9em; margin: 0 2px;">
+                                <span style="border-bottom:1px solid; display:block; padding:0 2px;">(<span class="math-variable">m<sub>i</sub></span> &minus; <span class="math-variable">n</span>)<sup>2</sup></span>
+                                <span style="display:block; padding:0 2px;">2&sigma;<sup>2</sup></span>
+                            </span>
+                            <span style="font-size:1.2em;">&rpar;</span>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 16px; font-size: 0.85rem; color: var(--text-muted); text-align: left; background: #ffffff; padding: 12px 16px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <div><b>m<sub>i</sub></b> : Midpoint value of class i</div>
+                        <div><b>n</b> : Sample arithmetic mean</div>
+                        <div><b>&sigma;</b> : Sample standard deviation</div>
+                        <div><b>d</b> : Bin width (partition span)</div>
+                    </div>
+                `;
+            } else {
+                thDensity.innerText = "POISSON PROBABILITY P(m_i)";
+                box.innerHTML = `
+                    <div class="report-math-caption">POISSON DISTRIBUTION MATHEMATICAL SPECIFICATION & RECURRENCE FORMULATION</div>
+                    <div class="math-eq-stack">
+                        <div class="math-eq-card">
+                            ① General Formulation (PMF): &nbsp;
+                            <span class="math-variable">P</span>(<span class="math-variable">m</span>) = 
+                            <span style="display:inline-block; vertical-align:middle; text-align:center; font-size: 0.9em; margin: 0 4px;">
+                                <span style="border-bottom:1px solid; display:block; padding:0 2px;"><span class="math-variable">n</span><sup><span class="math-variable">m</span></sup> &middot; e<sup>&minus;<span class="math-variable">n</span></sup></span>
+                                <span style="display:block; padding:0 2px;"><span class="math-variable">m</span> !</span>
+                            </span>
+                        </div>
+
+                        <div class="math-eq-card" style="border-color: #38bdf8; background: #f0f9ff;">
+                            ② Recurrence Relation (漸化式): &nbsp;
+                            <span class="math-variable">P</span>(0) = e<sup>&minus;<span class="math-variable">n</span></sup>, &nbsp;&nbsp;&nbsp;
+                            <span class="math-variable">P</span>(<span class="math-variable">m</span> + 1) = 
+                            <span style="display:inline-block; vertical-align:middle; text-align:center; font-size: 0.9em; margin: 0 4px;">
+                                <span style="border-bottom:1px solid; display:block; padding:0 2px;"><span class="math-variable">n</span></span>
+                                <span style="display:block; padding:0 2px;"><span class="math-variable">m</span> + 1</span>
+                            </span>
+                            &middot; <span class="math-variable">P</span>(<span class="math-variable">m</span>)
+                        </div>
+
+                        <div class="math-eq-card" style="border-color: #cbd5e1; background: #fafbfc;">
+                            ③ Theoretical Percentage: &nbsp;
+                            <span class="math-variable">P</span>(<span class="math-variable">m<sub>i</sub></span>) [%] = 
+                            <span class="math-variable">P</span>(<span class="math-variable">m<sub>i</sub></span>) &middot; 100 [%]
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 16px; font-size: 0.85rem; color: var(--text-muted); text-align: left; background: #ffffff; padding: 12px 16px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <div><b>m</b> : Discrete count event (0, 1, ..., 19)</div>
+                        <div><b>n</b> : Sample arithmetic mean (n)</div>
+                        <div><b>&sigma;<sup>2</sup></b> : Theoretical variance (σ² = n)</div>
+                        <div><b>P(m+1)</b> : Recursive formulation for iterative evaluation</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // GRID AND DATA INGESTION
+        // ============================================================
+        const COLS = 5;
+        function renderInputGrid() {
+            const table = document.getElementById('grid-input-table');
+            if(!table) return;
+
+            const validDataCount = currentRawData.filter(v => typeof v === 'number' && !isNaN(v) && v !== null).length;
+            const countEl = document.getElementById('grid-data-count');
+            if (countEl) countEl.innerText = validDataCount;
+
+            const totalCells = Math.max(COLS, Math.ceil(currentRawData.length / COLS) * COLS);
+            const totalRows = totalCells / COLS;
+
+            let html = '<thead><tr>';
+            for(let c=0; c<COLS; c++) {
+                html += '<th>INDEX</th><th>COUNT RATE</th>';
+            }
+            html += '</tr></thead><tbody>';
+
+            for(let r=0; r<totalRows; r++) {
+                html += '<tr>';
+                for(let c=0; c<COLS; c++) {
+                    const idx = r + c * totalRows;
+                    const val = (idx < currentRawData.length && currentRawData[idx] !== null && currentRawData[idx] !== undefined)
+                        ? currentRawData[idx] : '';
+                    html += `<td class="matrix-cell-badge">#${idx + 1}</td>`;
+                    html += `<td><input type="number" class="matrix-input-cell" data-idx="${idx}" value="${val}" onchange="onCellInputChange(this)"></td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        function parsePastedData() {
+            const rawText = document.getElementById('paste-input-area').value;
+            if(!rawText.trim()) return;
+
+            const tokens = rawText.trim().split(/[\s,\t\r\n]+/);
+            const nums = tokens.map(t => parseFloat(t)).filter(n => !isNaN(n));
+
+            if(nums.length === 0) {
+                alert("No valid numeric values detected.");
+                return;
+            }
+
+            currentRawData = [...nums];
+
+            if(nums.length >= 2) {
+                let minVal = nums[0];
+                let maxVal = nums[0];
+                for(let i=1; i<nums.length; i++) {
+                    if(nums[i] < minVal) minVal = nums[i];
+                    if(nums[i] > maxVal) maxVal = nums[i];
+                }
+                document.getElementById('input-min').value = minVal;
+                document.getElementById('input-max').value = maxVal;
+                
+                if (currentModelMode === 'poisson') {
+                    document.getElementById('input-width').value = 1;
+                    document.getElementById('input-start-min').value = Math.max(0, Math.floor(minVal));
+                } else {
+                    document.getElementById('input-start-min').value = Math.floor(minVal / 10) * 10;
+                }
+            }
+
+            renderInputGrid();
+            recalculateAll();
+            alert(`${nums.length} samples ingested successfully into ${currentModelMode.toUpperCase()} workbench.`);
+        }
+
+        function onCellInputChange(inputEl) {
+            const idx = parseInt(inputEl.getAttribute('data-idx'));
+            const val = parseFloat(inputEl.value);
+            
+            while(currentRawData.length <= idx) {
+                currentRawData.push(null);
+            }
+
+            if(!isNaN(val)) {
+                currentRawData[idx] = val;
+            } else {
+                currentRawData[idx] = null;
+            }
+
+            const validDataCount = currentRawData.filter(v => typeof v === 'number' && !isNaN(v) && v !== null).length;
+            const countEl = document.getElementById('grid-data-count');
+            if (countEl) countEl.innerText = validDataCount;
+
+            recalculateAll();
+        }
+
+        function addRow(count = 1) {
+            const totalCells = Math.max(COLS, Math.ceil(currentRawData.length / COLS) * COLS);
+            const newTotal = totalCells + count * COLS;
+            while(currentRawData.length < newTotal) {
+                currentRawData.push(null);
+            }
+            renderInputGrid();
+        }
+
+        function removeRow() {
+            const totalCells = Math.max(COLS, Math.ceil(currentRawData.length / COLS) * COLS);
+            if (totalCells <= COLS) {
+                alert("Minimum 1 row required.");
+                return;
+            }
+            const totalRows = totalCells / COLS;
+            const targetRow = totalRows - 1;
+            const removeIndices = [];
+            for(let c=0; c<COLS; c++) {
+                removeIndices.push(targetRow + c * totalRows);
+            }
+            removeIndices.sort((a,b) => b - a);
+            for(const idx of removeIndices) {
+                if(idx < currentRawData.length) {
+                    currentRawData.splice(idx, 1);
+                }
+            }
+            renderInputGrid();
+            recalculateAll();
+        }
+
+        function resetSampleData() {
+            if (currentModelMode === 'gauss') {
+                currentRawData = [...sampleCo60Data];
+                document.getElementById('input-min').value = 1550;
+                document.getElementById('input-max').value = 1731;
+                document.getElementById('input-width').value = 10;
+                document.getElementById('input-start-min').value = 1540;
+            } else {
+                currentRawData = [...samplePoissonData];
+                document.getElementById('input-min').value = 0;
+                document.getElementById('input-max').value = 19;
+                document.getElementById('input-width').value = 1;
+                document.getElementById('input-start-min').value = 0;
+            }
+            document.getElementById('paste-input-area').value = '';
+            renderInputGrid();
+            recalculateAll();
+        }
+
+        function clearData() {
+            currentRawData = new Array(20 * COLS).fill(null);
+            document.getElementById('paste-input-area').value = '';
+            renderInputGrid();
+            recalculateAll();
+        }
+
+        function onStudentSettingChange() {
+            recalculateAll();
+        }
+
+        // ============================================================
+        // RECALCULATE ENGINE (UNIFIED GAUSS & POISSON)
+        // ============================================================
+        function recalculateAll() {
+            studentMin = parseFloat(document.getElementById('input-min').value) || 0;
+            studentMax = parseFloat(document.getElementById('input-max').value) || 0;
+            binWidth = parseFloat(document.getElementById('input-width').value) || (currentModelMode === 'poisson' ? 1 : 10);
+            startMin = parseFloat(document.getElementById('input-start-min').value) || 0;
+
+            const rawWidth = (studentMax - studentMin) / 20;
+            document.getElementById('calc-width-raw').value = rawWidth.toFixed(2);
+
+            const validData = currentRawData.filter(v => typeof v === 'number' && !isNaN(v) && v !== null);
+            const M = validData.length;
+
+            if (M === 0) {
+                computedMean = 0;
+                computedStdDev = 0;
+                document.getElementById('badge-count').innerText = `M = 0 SAMPLES`;
+                document.getElementById('stat-M').innerText = `0`;
+                document.getElementById('sb-stat-M').innerText = `0`;
+                document.getElementById('sb-stat-mean').innerText = `-`;
+                document.getElementById('sb-stat-std').innerText = `-`;
+                return;
+            }
+
+            const sum = validData.reduce((acc, v) => acc + v, 0);
+            computedMean = sum / M;
+
+            const variance = validData.reduce((acc, v) => acc + Math.pow(v - computedMean, 2), 0) / M;
+            computedStdDev = Math.sqrt(variance);
+
+            let maxValInData = studentMax;
+            for(let i=0; i<validData.length; i++) {
+                if (validData[i] > maxValInData) maxValInData = validData[i];
+            }
+            const targetMax = Math.max(studentMax, maxValInData);
+            let K = Math.ceil((targetMax - startMin + 1) / binWidth);
+            if (K < 1) K = 1;
+
+            processedRows = [];
+            let total_freq = 0;
+            let total_ms = 0;
+            let total_ss = 0;
+            let total_theory_p = 0;
+            computedChiSquare = 0;
+
+            for(let i=0; i<K; i++) {
+                const b_min = startMin + i * binWidth;
+                const b_max = b_min + binWidth - 0.0001;
+                const mi = (b_min + (b_min + binWidth - 1)) / 2;
+
+                const freq = validData.filter(v => v >= b_min && v <= b_max).length;
+                const act_pct = (freq / M) * 100;
+                const ms = mi * freq;
+                const ss = freq * Math.pow(mi - computedMean, 2);
+
+                let densityVal = 0;
+                let theory_pct = 0;
+
+                if (currentModelMode === 'gauss') {
+                    // Gaussian Model
+                    densityVal = normPDF(mi, computedMean, computedStdDev);
+                    theory_pct = densityVal * binWidth * 100;
+                } else {
+                    // Poisson Model (with mean n)
+                    // If binWidth === 1, discrete exact PMF:
+                    if (binWidth === 1) {
+                        const countM = Math.round(mi);
+                        densityVal = poissonPMF(countM, computedMean);
+                        theory_pct = densityVal * 100;
+                    } else {
+                        const intStart = Math.ceil(b_min);
+                        const intEnd = Math.floor(b_min + binWidth - 0.0001);
+                        let binProbSum = 0;
+                        for (let k = intStart; k <= intEnd; k++) {
+                            binProbSum += poissonPMF(k, computedMean);
+                        }
+                        densityVal = binProbSum;
+                        theory_pct = binProbSum * 100;
+                    }
+                }
+
+                // Chi-Square calculation
+                const Ei = (theory_pct / 100) * M;
+                if (Ei > 0.001) {
+                    computedChiSquare += Math.pow(freq - Ei, 2) / Ei;
+                }
+
+                total_freq += freq;
+                total_ms += ms;
+                total_ss += ss;
+                total_theory_p += theory_pct;
+
+                processedRows.push({
+                    no: i + 1,
+                    min: Math.floor(b_min),
+                    max: Math.floor(b_min + binWidth - 1),
+                    binUpper: Math.floor(b_min + binWidth - 1),
+                    mi: mi,
+                    freq: freq,
+                    act_pct: act_pct,
+                    ms: ms,
+                    ss: ss,
+                    density: densityVal,
+                    theory_pct: theory_pct
+                });
+            }
+
+            // Degrees of Freedom:
+            // Gauss: K - 1 - 2 (mean, variance) = K - 3
+            // Poisson: K - 1 - 1 (mean n) = K - 2
+            const dof = (currentModelMode === 'gauss') ? Math.max(1, K - 3) : Math.max(1, K - 2);
+            const critical = getChi2Critical(dof);
+
+            // Update Top Header & Stats
+            document.getElementById('badge-count').innerText = `M = ${M} SAMPLES`;
+            document.getElementById('badge-bin').innerText = `d = ${binWidth} (${K} BINS)`;
+
+            document.getElementById('stat-M').innerText = `${M}`;
+            document.getElementById('stat-min').innerText = `${studentMin}`;
+            document.getElementById('stat-max').innerText = `${studentMax}`;
+            document.getElementById('stat-d').innerText = `${binWidth}`;
+            document.getElementById('stat-mean').innerText = `${computedMean.toFixed(2)}`;
+            document.getElementById('stat-std').innerText = `${computedStdDev.toFixed(2)}`;
+            document.getElementById('stat-var').innerText = `${variance.toFixed(2)}`;
+
+            if (currentModelMode === 'poisson') {
+                const fanoRatio = computedMean > 0 ? (variance / computedMean) : 0;
+                document.getElementById('stat-fano').innerText = fanoRatio.toFixed(2);
+            }
+
+            // Drawer Inspector
+            document.getElementById('sb-stat-M').innerText = `${M}`;
+            document.getElementById('sb-stat-mean').innerText = `${computedMean.toFixed(1)}`;
+            document.getElementById('sb-stat-std').innerText = `${computedStdDev.toFixed(2)}`;
+            document.getElementById('sb-stat-d').innerText = `${binWidth}`;
+
+            // Chi-Square Update
+            const chiValEl = document.getElementById('chi-val-display');
+            const chiBadgeEl = document.getElementById('chi-status-badge');
+            const sbChiBadgeEl = document.getElementById('sb-chi-badge');
+            const chiMeterEl = document.getElementById('chi-meter-bar');
+            const chiMarkerEl = document.getElementById('chi-meter-marker');
+            const chiDescEl = document.getElementById('chi-desc-box');
+            const chiCritEl = document.getElementById('chi-critical-display');
+            const chiDofEl = document.getElementById('chi-dof-display');
+            const chiMeterLabelEl = document.getElementById('chi-meter-label');
+
+            if (chiValEl && chiBadgeEl) {
+                chiValEl.innerText = computedChiSquare.toFixed(2);
+                if (chiCritEl) chiCritEl.innerText = critical.toFixed(2);
+                if (chiDofEl) chiDofEl.innerText = dof;
+                if (chiMeterLabelEl) chiMeterLabelEl.innerText = `[FIT RATIO METER] (Optimal: χ² ≤ ${critical.toFixed(2)})`;
+
+                const maxScale = critical * 1.3;
+                const meterPct = Math.min(100, (computedChiSquare / maxScale) * 100);
+                const markerPct = Math.min(100, (critical / maxScale) * 100);
+
+                chiMeterEl.style.width = meterPct + '%';
+                if (chiMarkerEl) {
+                    chiMarkerEl.style.left = markerPct + '%';
+                    chiMarkerEl.title = `Critical Threshold: ${critical.toFixed(2)}`;
+                }
+
+                const diff = computedChiSquare - critical;
+                const modelNameEn = currentModelMode === 'gauss' ? 'Gaussian (Normal)' : 'Poisson (0-19 Range)';
+
+                if (diff <= 0) {
+                    chiBadgeEl.className = "chi-badge-pill chi-pass";
+                    chiBadgeEl.innerHTML = `PASS: ${currentModelMode.toUpperCase()} FIT CONFIRMED`;
+                    if (sbChiBadgeEl) {
+                        sbChiBadgeEl.className = "drawer-inspector-badge chi-pass";
+                        sbChiBadgeEl.innerText = "PASS: FIT CONFIRMED";
+                    }
+                    chiDescEl.innerHTML =
+                        `<b>[EVALUATION]</b> Calculated Chi-Square value χ² = <b>${computedChiSquare.toFixed(2)}</b> is within critical threshold <b>${critical.toFixed(2)}</b> (dof ν = ${dof}). ` +
+                        `The sample distribution statistically conforms to the <b>${modelNameEn}</b> model within expected statistical fluctuation.<br><br>` +
+                        `<b>[DISCUSSION HINTS]</b> ${currentModelMode === 'gauss' ? 'Compare experimental vs theoretical standard deviation, evaluate standard error, and inspect detector characteristics.' : 'Confirm whether sample variance s² is close to sample mean n (s²/n ≈ 1.0) and verify agreement with recurrence calculation P(m+1) = [n/(m+1)]·P(m).'}`;
+                }
+                else if (diff > 0 && diff <= 2) {
+                    chiBadgeEl.className = "chi-badge-pill chi-allow";
+                    chiBadgeEl.innerHTML = "MARGINAL: ACCEPTABLE FIT";
+                    if (sbChiBadgeEl) {
+                        sbChiBadgeEl.className = "drawer-inspector-badge chi-allow";
+                        sbChiBadgeEl.innerText = "MARGINAL FIT";
+                    }
+                    chiDescEl.innerHTML =
+                        `<b>[EVALUATION]</b> Calculated Chi-Square value χ² = <b>${computedChiSquare.toFixed(2)}</b> marginally exceeds critical threshold <b>${critical.toFixed(2)}</b> (dof ν = ${dof}) by <b>${diff.toFixed(2)}</b>. ` +
+                        `This is within an acceptable margin attributable to detector non-idealities.<br><br>` +
+                        `<b>[DISCUSSION HINTS]</b> Inspect dead time, background variations, or bin partitioning.`;
+                }
+                else if (diff > 2 && diff <= 5) {
+                    chiBadgeEl.className = "chi-badge-pill chi-warn";
+                    chiBadgeEl.innerHTML = "WARNING: DEVIATION DETECTED";
+                    if (sbChiBadgeEl) {
+                        sbChiBadgeEl.className = "drawer-inspector-badge chi-warn";
+                        sbChiBadgeEl.innerText = "RECHECK FIT";
+                    }
+                    chiDescEl.innerHTML =
+                        `<b>[EVALUATION]</b> Calculated Chi-Square value χ² = <b>${computedChiSquare.toFixed(2)}</b> exceeds critical threshold <b>${critical.toFixed(2)}</b> (dof ν = ${dof}) by <b>${diff.toFixed(2)}</b>. ` +
+                        `Review bin width allocation or measurement conditions.<br><br>` +
+                        `<b>[DISCUSSION HINTS]</b> Check for drift in the GM survey meter or insufficient count duration.`;
+                }
+                else {
+                    chiBadgeEl.className = "chi-badge-pill chi-alert";
+                    chiBadgeEl.innerHTML = "ALERT: MODEL REJECTED";
+                    if (sbChiBadgeEl) {
+                        sbChiBadgeEl.className = "drawer-inspector-badge chi-alert";
+                        sbChiBadgeEl.innerText = "REJECTED";
+                    }
+                    chiDescEl.innerHTML =
+                        `<b>[EVALUATION]</b> Calculated Chi-Square value χ² = <b>${computedChiSquare.toFixed(2)}</b> significantly exceeds critical threshold <b>${critical.toFixed(2)}</b> (dof ν = ${dof}). ` +
+                        `Systematic errors or severe distribution bias are likely present.<br><br>` +
+                        `<b>[DISCUSSION HINTS]</b> Verify whether the chosen distribution model (${modelNameEn}) appropriately fits the count rate regime.`;
+                }
+            }
+
+            // Section Title
+            const secTitleEl = document.getElementById('table-section-title');
+            if (secTitleEl) {
+                secTitleEl.innerText = `MODULE 03 // FULL FREQUENCY MATRIX & ${currentModelMode.toUpperCase()} MODEL TABLE (ALL ${K} BINS, M = ${M} SAMPLES)`;
+            }
+
+            // Preview Table (Tab 0)
+            const previewBody = document.getElementById('bin-preview-tbody');
+            if(previewBody) {
+                previewBody.innerHTML = processedRows.map(r => `
+                    <tr>
+                        <td style="font-family: var(--font-mono); font-weight:700;">#${r.no}</td>
+                        <td style="font-family: var(--font-mono);">${r.min} 〜 ${r.max}</td>
+                        <td style="font-family: var(--font-mono);">${r.max}</td>
+                        <td style="font-family: var(--font-mono); color: var(--primary); font-weight:700;">${r.mi.toFixed(1)}</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--text-main);">${r.freq}</td>
+                        <td style="font-family: var(--font-mono);">${r.act_pct.toFixed(1)}%</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Full Table (Tab 3)
+            const tbody = document.getElementById('table-body');
+            if(tbody) {
+                tbody.innerHTML = processedRows.map(r => `
+                    <tr>
+                        <td style="font-family: var(--font-mono); font-weight:700;">#${r.no}</td>
+                        <td style="font-family: var(--font-mono);">${r.min} 〜 ${r.max}</td>
+                        <td style="font-family: var(--font-mono);">${r.max}</td>
+                        <td style="font-family: var(--font-mono); font-weight:700; color: var(--primary);">${r.mi.toFixed(1)}</td>
+                        <td style="font-family: var(--font-mono); font-weight:700;">${r.freq}</td>
+                        <td style="font-family: var(--font-mono);">${r.act_pct.toFixed(1)}%</td>
+                        <td style="font-family: var(--font-mono);">${r.ms.toFixed(1)}</td>
+                        <td style="font-family: var(--font-mono);">${r.ss.toFixed(1)}</td>
+                        <td style="font-family: var(--font-mono);">${r.density.toFixed(5)}</td>
+                        <td class="highlight-col">${r.theory_pct.toFixed(2)}%</td>
+                    </tr>
+                `).join('');
+
+                const tfoot = document.getElementById('table-foot');
+                tfoot.innerHTML = `
+                    <td colspan="4" style="text-align: center;">TOTAL / SUMMARY</td>
+                    <td>${total_freq}</td>
+                    <td>100.0%</td>
+                    <td>${total_ms.toFixed(1)}</td>
+                    <td>${total_ss.toFixed(1)}</td>
+                    <td>-</td>
+                    <td class="highlight-col">${total_theory_p.toFixed(2)}%</td>
+                `;
+            }
+
+            // Report Table (Tab 5)
+            const reportTbody = document.getElementById('report-table-body');
+            if(reportTbody) {
+                reportTbody.innerHTML = processedRows.map(r => `
+                    <tr>
+                        <td style="font-family: var(--font-mono); font-weight:700;">#${r.no}</td>
+                        <td style="font-family: var(--font-mono);">${r.min} 〜 ${r.max}</td>
+                        <td style="font-family: var(--font-mono); color: var(--primary); font-weight:700;">${r.mi.toFixed(1)}</td>
+                        <td style="font-family: var(--font-mono); font-weight:700;">${r.freq}</td>
+                        <td style="font-family: var(--font-mono);">${r.act_pct.toFixed(1)}%</td>
+                        <td style="font-family: var(--font-mono);">${r.density.toFixed(5)}</td>
+                        <td class="highlight-col">${r.theory_pct.toFixed(2)}%</td>
+                    </tr>
+                `).join('');
+
+                const reportTfoot = document.getElementById('report-table-foot');
+                reportTfoot.innerHTML = `
+                    <td colspan="3" style="text-align: center;">TOTAL</td>
+                    <td>${total_freq}</td>
+                    <td>100.0%</td>
+                    <td>-</td>
+                    <td class="highlight-col">${total_theory_p.toFixed(2)}%</td>
+                `;
+            }
+
+            if(chartInstance) {
+                initChart();
+            }
+        }
+
+        function applyStudentSettings() {
+            recalculateAll();
+            alert("Bin configuration applied successfully.");
+        }
+
+        function copyReportTableToClipboard() {
+            const densityCol = currentModelMode === 'gauss' ? 'Gaussian PDF f(m_i)' : 'Poisson P(m_i)';
+            let tText = `Bin No\tInterval Range\tMidpoint m_i\tMeasured s_i\tMeasured Pct(%)\t${densityCol}\tTheoretical P(m_i)[%]\n`;
+            processedRows.forEach(r => {
+                tText += `${r.no}\t${r.min}〜${r.max}\t${r.mi.toFixed(1)}\t${r.freq}\t${r.act_pct.toFixed(1)}%\t${r.density.toFixed(5)}\t${r.theory_pct.toFixed(2)}%\n`;
+            });
+            navigator.clipboard.writeText(tText).then(() => {
+                alert("Report table copied to clipboard.");
+            }).catch(err => {
+                alert("Failed to copy. Please select and copy manually.");
+            });
+        }
+
+        // ============================================================
+        // CHART.JS SETUP
+        // ============================================================
+        let chartInstance = null;
+        let currentMode = 'percent';
+
+        function initChart() {
+            const canvas = document.getElementById('co60Chart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+
+            const labels = processedRows.map(r => r.mi.toFixed(0));
+
+            const validData = currentRawData.filter(v => typeof v === 'number' && !isNaN(v) && v !== null);
+            const M = validData.length || 1;
+
+            const actualData = currentMode === 'percent' 
+                ? processedRows.map(r => r.act_pct)
+                : processedRows.map(r => r.freq);
+
+            const theoryData = currentMode === 'percent'
+                ? processedRows.map(r => r.theory_pct)
+                : processedRows.map(r => (r.theory_pct / 100) * M);
+
+            const modelLabel = currentModelMode === 'gauss' ? 'GAUSSIAN FIT MODEL' : 'POISSON FIT MODEL';
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'OBSERVED FREQUENCY ' + (currentMode === 'percent' ? '(%)' : '(COUNTS)'),
+                            data: actualData,
+                            backgroundColor: 'rgba(2, 132, 199, 0.75)',
+                            borderColor: '#0284c7',
+                            borderWidth: 1.5,
+                            borderRadius: 4,
+                            categoryPercentage: 1.0,
+                            barPercentage: 0.92
+                        },
+                        {
+                            type: 'line',
+                            label: modelLabel + ' ' + (currentMode === 'percent' ? '(%)' : '(COUNTS)'),
+                            data: theoryData,
+                            borderColor: '#dc2626',
+                            borderWidth: 2.5,
+                            fill: false,
+                            tension: currentModelMode === 'gauss' ? 0.38 : 0.2,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#dc2626',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 1.5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 350
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#334155',
+                                font: { family: 'JetBrains Mono', size: 11, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: '#0f172a',
+                            titleColor: '#38bdf8',
+                            bodyColor: '#ffffff',
+                            padding: 10,
+                            bodyFont: { family: 'JetBrains Mono' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.04)'
+                            },
+                            ticks: {
+                                color: '#64748b',
+                                font: { family: 'JetBrains Mono', size: 10 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'COUNT RATE m_i [counts/10s]',
+                                color: '#334155',
+                                font: { family: 'JetBrains Mono', size: 11, weight: 'bold' }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                color: '#64748b',
+                                font: { family: 'JetBrains Mono', size: 10 }
+                            },
+                            title: {
+                                display: true,
+                                text: currentMode === 'percent' ? 'PERCENTILE [%]' : 'COUNTS [N]',
+                                color: '#334155',
+                                font: { family: 'JetBrains Mono', size: 11, weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChartMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-percent').classList.toggle('active', mode === 'percent');
+            document.getElementById('btn-count').classList.toggle('active', mode === 'count');
+
+            initChart();
+        }
+
+        // On Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderProtocolSteps();
+            renderReportMathBox();
+            renderInputGrid();
+            recalculateAll();
+            updateNavButtonsState();
+        });
+    </script>
+</body>
+</html>
